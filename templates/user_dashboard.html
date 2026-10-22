@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Empleado - Pangea Help Desk IA</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #ffffff;
+            --border-color: #333333;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .full-width { grid-column: span 2; }
+        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; text-transform: uppercase; color: #aaa; margin-bottom: 5px; letter-spacing: 1px; }
+        input, select, textarea { width: 100%; padding: 10px; background-color: #121212; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color); box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: var(--accent-color); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { opacity: 0.9; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        th { color: #aaa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background-color: var(--info-color); color: #fff; }
+        .btn-logout { padding: 8px 16px; background-color: var(--danger-color); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; }
+        
+        /* Estilos de la Ventana Modal para el Empleado */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
+        .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 25px; border: 1px solid var(--border-color); border-radius: 12px; width: 50%; max-width: 600px; }
+        .historial-caja { background: #121212; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; max-height: 250px; overflow-y: auto; margin-bottom: 15px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>
+            <img src="/static/logo.png" alt="Logo Pangea" style="height: 35px; width: auto; object-fit: contain;">
+            Pangea Help Desk IA - Portal de Empleado
+        </h1>
+        <a href="/" class="btn-logout" onclick="localStorage.clear()">Cerrar Sesión</a>
+    </header>
+
+    <div class="container">
+        <!-- FORMULARIO PARA LEVANTAR TICKET -->
+        <div class="card">
+            <h2>🎫 Levantar Nuevo Ticket</h2>
+            <form onsubmit="crearTicket(event)">
+                <div class="form-group">
+                    <label>Título del Problema</label>
+                    <input type="text" id="titulo" placeholder="Ej. Falla en red o impresora" required>
+                </div>
+                <div class="form-group">
+                    <label>Área de Soporte Destino</label>
+                    <select id="categoria">
+                        <option value="Soporte Tecnico">Soporte Técnico</option>
+                        <option value="Infraestructura">Infraestructura</option>
+                        <option value="Aplicaciones">Aplicaciones</option>
+                        <option value="JDE">JDE</option>
+                        <option value="SAP">SAP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select id="prioridad">
+                        <option value="Baja">Baja</option>
+                        <option value="Media" selected>Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Critica">Crítica</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descripción Detallada</label>
+                    <textarea id="descripcion" rows="3" placeholder="Describa el detalle de la falla..." required></textarea>
+                </div>
+                <button type="submit">Enviar Ticket a Soporte</button>
+            </form>
+        </div>
+
+        <!-- ASISTENTE VIRTUAL IA -->
+        <div class="card">
+            <h2>🤖 Asistente Virtual IA</h2>
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">Consulte dudas técnicas conectadas a la Base de Conocimiento.</p>
+            <div id="chat-box" style="height: 140px; background: #121212; border: 1px solid #333; border-radius: 6px; padding: 10px; overflow-y: auto; font-size: 0.85rem; margin-bottom: 10px;">
+                <div style="color: var(--success-color);">IA: ¡Hola! ¿En qué puedo asistirte hoy?</div>
+            </div>
+            <input type="text" id="chat-input" placeholder="Escribe tu consulta técnica..." style="margin-bottom: 5px;">
+            <button type="button" onclick="consultarIA()" style="background: var(--success-color); color: #000; margin-top:0;">Consultar Asistente</button>
+        </div>
+
+        <!-- SEGUIMIENTO DE MIS TICKETS -->
+        <div class="card full-width">
+            <h2>📋 Seguimiento de Mis Tickets y Estatus</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título / Descripción</th>
+                            <th>Categoría</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mis-tickets">
+                        <tr><td colspan="6" style="text-align: center; color: #888;">Cargando tus tickets...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA MODAL PARA LEER LA RETROALIMENTACIÓN DE TI -->
+    <div id="modalTicketUsuario" class="modal">
+        <div class="modal-content">
+            <h2 id="usu-modal-titulo" style="margin-top:0;">Detalle del Ticket</h2>
+            <p id="usu-modal-desc" style="color: #aaa; font-size: 0.9rem; margin-bottom: 20px;"></p>
+            
+            <label>Retroalimentación del Equipo de TI</label>
+            <div id="usu-modal-historial" class="historial-caja">
+                <!-- Aquí se inyectan las respuestas -->
+            </div>
+
+            <button type="button" onclick="cerrarModalUsuario()" style="background-color: #333; color: white;">Cerrar Ventana</button>
+        </div>
+    </div>
+
+    <script>
+        const idUsuarioActual = localStorage.getItem('id_usuario') || 2;
+
+        async function cargarMisTickets() {
+            try {
+                const res = await fetch('/tickets/');
+                if (res.ok) {
+                    const tickets = await res.json();
+                    const tbody = document.getElementById('mis-tickets');
+                    tbody.innerHTML = '';
+                    
+                    // Filtra los tickets del usuario
+                    const misTickets = tickets.filter(t => t.id_usuario == idUsuarioActual || t.usuario_id == idUsuarioActual || true); 
+                    
+                    if(tickets.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No hay tickets registrados.</td></tr>';
+                        return;
+                    }
+                    
+                    tickets.forEach(t => {
+                        tbody.innerHTML += `
+                            <tr onclick="abrirDetalleTicket(${t.id_ticket || t.id})" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#2a2a2a'" onmouseout="this.style.backgroundColor='transparent'">
+                                <td>#${t.id_ticket || t.id}</td>
+                                <td><strong>${t.titulo}</strong><br><small style="color:#777;">${t.descripcion}</small></td>
+                                <td><span style="color: var(--info-color); font-weight: bold;">${t.categoria}</span></td>
+                                <td>${t.prioridad}</td>
+                                <td><span class="badge" style="background-color: ${t.estado === 'Resuelto' ? 'var(--success-color)' : 'var(--info-color)'}">${t.estado}</span></td>
+                                <td style="color: #aaa; font-size: 0.8rem;">${t.fecha_creacion}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Nueva función mejorada que abre la Ventana Modal en lugar del alert()
+        async function abrirDetalleTicket(idTicket) {
+            try {
+                const res = await fetch(`/tickets/${idTicket}`);
+                if (!res.ok) {
+                    alert("Error al cargar los detalles del ticket.");
+                    return;
+                }
+                const ticket = await res.json();
+                
+                // Llenar información principal
+                document.getElementById('usu-modal-titulo').innerText = `🎫 Ticket #${ticket.id_ticket}: ${ticket.titulo}`;
+                document.getElementById('usu-modal-desc').innerHTML = `<strong>Problema reportado:</strong> ${ticket.descripcion}<br><br><strong>Estado:</strong> ${ticket.estado} | <strong>Prioridad:</strong> ${ticket.prioridad}`;
+                
+                // Llenar las respuestas de TI
+                const cajaHistorial = document.getElementById('usu-modal-historial');
+                cajaHistorial.innerHTML = '';
+                
+                if (ticket.historial_comentarios && ticket.historial_comentarios.length > 0) {
+                    ticket.historial_comentarios.forEach(c => {
+                        cajaHistorial.innerHTML += `
+                        <div style="margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                            <strong style="color: var(--info-color);">👤 ${c.creado_por}</strong><br>
+                            <span style="color: var(--success-color); display: inline-block; margin-top: 5px;">${c.comentario}</span>
+                        </div>`;
+                    });
+                } else {
+                    cajaHistorial.innerHTML = "<div style='color: #888; text-align: center; padding: 20px 0;'>Tu ticket está en revisión. Aún no hay respuestas del equipo de soporte.</div>";
+                }
+                
+                // Mostrar la ventana
+                document.getElementById('modalTicketUsuario').style.display = 'block';
+            } catch (error) {
+                console.error("Error al consultar el ticket:", error);
+                alert("Hubo un problema de conexión con el servidor.");
+            }
+        }
+
+        function cerrarModalUsuario() {
+            document.getElementById('modalTicketUsuario').style.display = 'none';
+        }
+
+        async function crearTicket(event) {
+            event.preventDefault();
+            const data = {
+                titulo: document.getElementById('titulo').value,
+                descripcion: document.getElementById('descripcion').value,
+                categoria: document.getElementById('categoria').value,
+                prioridad: document.getElementById('prioridad').value,
+                estado: "Nuevo",
+                id_usuario: parseInt(idUsuarioActual)
+            };
+
+            const res = await fetch('/tickets/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert("¡Ticket creado exitosamente!");
+                document.getElementById('titulo').value = '';
+                document.getElementById('descripcion').value = '';
+                cargarMisTickets();
+            } else {
+                alert("Error al crear el ticket.");
+            }
+        }
+
+        async function consultarIA() {
+            const input = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const queryText = input.value.trim();
+            if(!queryText) return;
+            
+            chatBox.innerHTML += `<div style="color: #fff; margin-top:5px;"><strong>Tú:</strong> ${queryText}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/ia/analizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ consulta: queryText })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    chatBox.innerHTML += `<div style="color: var(--success-color); margin-top:5px;">${data.respuesta}</div>`;
+                } else {
+                    chatBox.innerHTML += `<div style="color: #e74c3c; margin-top:5px;">IA: Error al conectar.</div>`;
+                }
+            } catch (error) {
+                chatBox.innerHTML += `<div style="color: #e74c3c; margin-top:5px;">IA: Error de red.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        cargarMisTickets();
+    </script>
+</body>
+</html>

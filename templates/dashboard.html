@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - Pangea Help Desk IA</title>
+    <style>
+        :root {
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-color: #e0e0e0;
+            --accent-color: #ffffff; --border-color: #333333; --success-color: #2ecc71;
+            --danger-color: #e74c3c; --info-color: #3498db; --warning-color: #f1c40f;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; }
+        header { background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 1.2rem; margin: 0; display: flex; align-items: center; gap: 15px; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .full-width { grid-column: span 2; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        th { color: #aaa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background-color: var(--info-color); color: #fff; }
+        .btn-logout { padding: 8px 16px; background-color: var(--danger-color); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
+        .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 25px; border: 1px solid var(--border-color); border-radius: 12px; width: 50%; max-width: 600px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
+        select, textarea, input { width: 100%; padding: 10px; background-color: #121212; border: 1px solid var(--border-color); border-radius: 6px; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: var(--accent-color); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s;}
+        button:hover { opacity: 0.9;}
+        .btn-cancel { background-color: transparent; color: white; border: 1px solid var(--border-color); }
+        .historial-caja { background: #121212; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 15px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>
+            <img src="/static/logo.png" alt="Logo Pangea" style="height: 35px; width: auto; object-fit: contain;">
+            Pangea Help Desk IA - Panel de Administrador
+        </h1>
+        <a href="/" class="btn-logout" onclick="localStorage.clear()">Cerrar Sesión</a>
+    </header>
+
+    <div class="container">
+        <!-- TICKETS ACTIVOS -->
+        <div class="card full-width">
+            <h2 style="margin-top:0; border-bottom: 1px solid #333; padding-bottom: 10px;">🛡️ Gestión de Tickets en Planta</h2>
+            <div style="overflow-x: auto; max-height: 300px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título del Problema</th>
+                            <th>Categoría</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-tickets">
+                        <tr><td colspan="6" style="text-align: center; color: #888;">Cargando tickets...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FORMULARIO REGISTRAR ACTIVO -->
+        <div class="card">
+            <h2 style="margin-top:0; border-bottom: 1px solid #333; padding-bottom: 10px;">💻 Registrar Activo TI (Equipo)</h2>
+            <form onsubmit="registrarActivo(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Tipo de Equipo</label>
+                        <select id="activo-tipo">
+                            <option value="Laptop">Laptop</option>
+                            <option value="PC">PC de Escritorio</option>
+                            <option value="Impresora">Impresora</option>
+                            <option value="Servidor">Servidor</option>
+                            <option value="Celular">Celular</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Asignar a Usuario (ID)</label>
+                        <input type="number" id="activo-usuario" placeholder="ID del empleado (ej. 2)" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Nombre del Equipo</label>
+                        <input type="text" id="activo-nombre" placeholder="Ej. LPT-VENTAS-01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Número de Serie</label>
+                        <input type="text" id="activo-serie" placeholder="S/N..." required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" id="activo-marca" placeholder="Lenovo, HP, Dell..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo</label>
+                        <input type="text" id="activo-modelo" placeholder="ThinkPad T14..." required>
+                    </div>
+                </div>
+                <button type="submit" style="background-color: var(--success-color);">Guardar Activo en Inventario</button>
+            </form>
+        </div>
+
+        <!-- TABLA INVENTARIO DE ACTIVOS -->
+        <div class="card">
+            <h2 style="margin-top:0; border-bottom: 1px solid #333; padding-bottom: 10px;">🗄️ Inventario de Activos</h2>
+            <div style="overflow-x: auto; max-height: 400px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Equipo / Serie</th>
+                            <th>Marca/Modelo</th>
+                            <th>Asignado a</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-activos">
+                        <tr><td colspan="4" style="text-align: center; color: #888;">Cargando inventario...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA MODAL PARA ASIGNAR Y ATENDER TICKET -->
+    <div id="modalTicket" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-titulo" style="margin-top:0;">Asignar y Atender Ticket #</h2>
+            
+            <label>Historial y Comentarios</label>
+            <div id="modal-historial" class="historial-caja"></div>
+
+            <form id="form-actualizar" onsubmit="guardarSeguimiento(event)">
+                <input type="hidden" id="modal-id-ticket">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Cambiar Estado</label>
+                        <select id="modal-estado">
+                            <option value="Nuevo">Nuevo</option>
+                            <option value="Asignado">Asignado</option>
+                            <option value="En Proceso">En Proceso</option>
+                            <option value="Pendiente Usuario">Pendiente Usuario</option>
+                            <option value="Resuelto">Resuelto</option>
+                            <option value="Cerrado">Cerrado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Asignar a Área de Soporte</label>
+                        <select id="modal-area">
+                            <option value="2">Soporte Técnico</option>
+                            <option value="1">Infraestructura</option>
+                            <option value="3">Aplicaciones</option>
+                            <option value="4">JDE</option>
+                            <option value="5">SAP</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Respuesta o Retroalimentación</label>
+                    <textarea id="modal-comentario" rows="3" placeholder="Escribe el diagnóstico, la solución o las instrucciones..." required></textarea>
+                </div>
+
+                <button type="submit" style="background-color: var(--success-color);">Actualizar Ticket y Enviar</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- SECCIÓN TICKETS ---
+        async function cargarTickets() {
+            try {
+                const res = await fetch('/tickets/');
+                if (res.ok) {
+                    const tickets = await res.json();
+                    const tbody = document.getElementById('tabla-tickets');
+                    tbody.innerHTML = '';
+                    if(tickets.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No hay tickets.</td></tr>'; return;
+                    }
+                    tickets.forEach(t => {
+                        let colorEstado = 'var(--info-color)';
+                        if(t.estado === 'Resuelto' || t.estado === 'Cerrado') colorEstado = 'var(--success-color)';
+                        if(t.estado === 'En Proceso' || t.estado === 'Asignado') colorEstado = 'var(--warning-color)';
+                        
+                        tbody.innerHTML += `
+                            <tr onclick="abrirModalTicket(${t.id_ticket || t.id})" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#2a2a2a'" onmouseout="this.style.backgroundColor='transparent'">
+                                <td>#${t.id_ticket || t.id}</td>
+                                <td><strong>${t.titulo}</strong><br><small style="color:#777;">${t.descripcion}</small></td>
+                                <td><span style="color: var(--info-color); font-weight: bold;">${t.categoria}</span></td>
+                                <td>${t.prioridad}</td>
+                                <td><span class="badge" style="background-color: ${colorEstado}; color: #000;">${t.estado}</span></td>
+                                <td style="color: #aaa; font-size: 0.8rem;">${t.fecha_creacion}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (e) { console.error("Error cargando tickets:", e); }
+        }
+
+        async function abrirModalTicket(idTicket) {
+            try {
+                const res = await fetch(`/tickets/${idTicket}`);
+                if (res.ok) {
+                    const ticket = await res.json();
+                    document.getElementById('modal-titulo').innerText = `Asignar y Atender Ticket #${ticket.id_ticket}`;
+                    document.getElementById('modal-id-ticket').value = ticket.id_ticket;
+                    document.getElementById('modal-estado').value = ticket.estado;
+                    
+                    const cajaHistorial = document.getElementById('modal-historial');
+                    cajaHistorial.innerHTML = `<div style="color:#aaa; margin-bottom:10px;"><strong>Reporte:</strong> ${ticket.descripcion}</div>`;
+                    
+                    if (ticket.historial_comentarios && ticket.historial_comentarios.length > 0) {
+                        ticket.historial_comentarios.forEach(c => {
+                            cajaHistorial.innerHTML += `<div style="margin-top:8px;"><strong>👤 ${c.creado_por}:</strong> <span style="color:var(--success-color)">${c.comentario}</span></div>`;
+                        });
+                    }
+                    document.getElementById('modalTicket').style.display = 'block';
+                }
+            } catch (error) { alert("Error al cargar detalles."); }
+        }
+
+        async function guardarSeguimiento(event) {
+            event.preventDefault();
+            const idTicket = document.getElementById('modal-id-ticket').value;
+            const estado = document.getElementById('modal-estado').value;
+            const area = document.getElementById('modal-area').value; 
+            const comentario = document.getElementById('modal-comentario').value;
+
+            const formData = new FormData();
+            formData.append('id_area_soporte', area);
+            formData.append('estado', estado);
+            formData.append('comentario', comentario);
+
+            try {
+                const res = await fetch(`/tickets/actualizar/${idTicket}`, { method: 'PUT', body: formData });
+                if (res.ok) {
+                    alert("¡Ticket asignado y retroalimentación enviada!");
+                    cerrarModal(); document.getElementById('modal-comentario').value = ''; cargarTickets();
+                } else { alert("Error al actualizar."); }
+            } catch (error) { alert("Error de red."); }
+        }
+
+        function cerrarModal() { document.getElementById('modalTicket').style.display = 'none'; }
+
+        // --- SECCIÓN ACTIVOS TI ---
+        async function cargarActivos() {
+            try {
+                const res = await fetch('/activos/');
+                if (res.ok) {
+                    const activos = await res.json();
+                    const tbody = document.getElementById('tabla-activos');
+                    tbody.innerHTML = '';
+                    if(activos.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">No hay activos registrados.</td></tr>'; return;
+                    }
+                    activos.forEach(a => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><span class="badge" style="background-color: #9b59b6;">${a.tipo_equipo}</span></td>
+                                <td><strong>${a.nombre_equipo}</strong><br><small style="color:#777;">SN: ${a.numero_serie}</small></td>
+                                <td style="color: #ccc;">${a.marca} ${a.modelo}</td>
+                                <td style="color: var(--success-color);">${a.nombre_usuario || 'ID: ' + a.id_usuario}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (e) { console.error("Error cargando activos:", e); }
+        }
+
+        async function registrarActivo(event) {
+            event.preventDefault();
+            const data = {
+                tipo_equipo: document.getElementById('activo-tipo').value,
+                nombre_equipo: document.getElementById('activo-nombre').value,
+                numero_serie: document.getElementById('activo-serie').value,
+                marca: document.getElementById('activo-marca').value,
+                modelo: document.getElementById('activo-modelo').value,
+                id_usuario: parseInt(document.getElementById('activo-usuario').value)
+            };
+
+            try {
+                const res = await fetch('/activos/', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    alert("¡Activo registrado en inventario exitosamente!");
+                    event.target.reset(); cargarActivos();
+                } else { alert("Error al registrar activo."); }
+            } catch (error) { alert("Error de red al registrar activo."); }
+        }
+
+        // Cargar ambas tablas al iniciar
+        cargarTickets();
+        cargarActivos();
+    </script>
+</body>
+</html>
